@@ -1,0 +1,41 @@
+#!/usr/bin/env zsh
+
+# Function to verify if Rosetta 2 is installed
+verify() {
+  local cpu_brand=$(sysctl -n machdep.cpu.brand_string)
+  
+  if [[ $cpu_brand == *Apple* ]] && arch -x86_64 /usr/bin/true 2> /dev/null; then
+    echo "Installed"
+  elif [[ $cpu_brand == *Apple* ]]; then
+    echo "Missing"
+  else
+    echo "Ineligible"
+  fi
+}
+
+# Function to install Rosetta 2 if CPU is Apple-branded
+install() {
+  local cpu_brand=$(sysctl -n machdep.cpu.brand_string)
+  
+  [[ $cpu_brand == *Apple* ]] && /usr/sbin/softwareupdate -install-rosetta --agree-to-license
+}
+
+# Main function to determine action
+main() {
+  local status=$(verify)
+  
+  case $status in
+    "Installed")
+      echo "Apple Rosetta 2 is installed"
+      ;;
+    "Missing")
+      echo "Apple Rosetta 2 is not installed, attempting to install now"
+      install
+      ;;
+    *)
+      echo "Ineligible"
+      ;;
+  esac
+}
+
+main
